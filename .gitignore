@@ -8,6 +8,7 @@ node_modules/
 out/
 build/
 dist/
+*.tsbuildinfo
 next-env.d.ts
 
 # Vercel
@@ -43,4 +44,3 @@ test-results/
 Thumbs.db
 .idea/
 .vscode/
-
