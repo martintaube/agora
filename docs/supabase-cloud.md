@@ -56,6 +56,15 @@ nicht verwendet werden.
 
 ## 4. Auth im Dashboard
 
+Cloud-Stand vom 26. September 2026: `auth.email.otp_length` wurde über
+`supabase config push` explizit von acht auf sechs Stellen gesetzt. Der Push
+enthielt ausschließlich diese Eigenschaft; OTP-Ablaufzeit, Rate Limits, SMTP,
+Templates, Redirect URLs und alle übrigen Auth-Einstellungen blieben unverändert.
+Die deklarative Quelle bleibt `auth.email.otp_length = 6` in
+`supabase/config.toml`. Ein anschließender Versand über den produktiven
+Passwordless-Endpunkt war erfolgreich; das Template `{{ .Token }}` lieferte einen
+rein numerischen Code mit genau sechs Stellen.
+
 Unter **Authentication > Providers > Email**:
 
 - E-Mail-Provider und neue Registrierungen aktivieren.
