@@ -264,6 +264,7 @@ declare
   v_valid_count integer;
 begin
   if v_user_id is null then raise exception 'Authentication required'; end if;
+  if not exists (select 1 from public.profiles where id = v_user_id) then raise exception 'Profile required'; end if;
 
   select * into v_topic from public.topics where id = p_topic_id for update;
   if not found or not public.can_read_topic(p_topic_id, v_user_id) then raise exception 'Topic not available'; end if;
