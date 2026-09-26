@@ -1,5 +1,5 @@
 begin;
-select plan(18);
+select plan(19);
 
 select has_table('public', 'profiles');
 select has_table('public', 'communities');
@@ -18,6 +18,7 @@ select has_function('public', 'get_topic_comments', array['uuid']);
 select has_function('public', 'create_topic_comment', array['uuid', 'text', 'uuid']);
 select has_function('public', 'delete_topic_comment', array['uuid']);
 select has_function('public', 'admin_upsert_membership', array['uuid', 'text', 'community_role', 'boolean']);
+select has_function('public', 'admin_replace_vote_options', array['uuid', 'text[]']);
 
 select policies_are(
   'public', 'topics',
