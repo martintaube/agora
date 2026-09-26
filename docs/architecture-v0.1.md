@@ -2,9 +2,10 @@
 
 ## Aktueller Projektstand
 
-Das Repository enthält bislang Projektdokumentation und Git-Konfiguration, aber
-noch keine Anwendung. Dieses Dokument beschreibt daher die verbindliche
-Zielarchitektur für V0.1 und keine bereits implementierten Strukturen.
+Das Repository enthält eine lauffähige Next.js-Anwendung, Supabase-Migrationen,
+synthetische Pilotdaten sowie Unit- und pgTAP-Tests. Dieses Dokument beschreibt
+die verbindliche V0.1-Architektur; die Cloud-Inbetriebnahme ist separat in
+`docs/supabase-cloud.md` dokumentiert.
 
 ## Architekturprinzipien
 

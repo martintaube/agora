@@ -1,16 +1,16 @@
 begin;
 select plan(19);
 
-select has_table('public', 'profiles');
-select has_table('public', 'communities');
-select has_table('public', 'memberships');
-select has_table('public', 'places');
-select has_table('public', 'topics');
-select has_table('public', 'topic_options');
-select has_table('public', 'topic_selections');
-select has_table('public', 'topic_comments');
-select has_table('public', 'topic_attachments');
-select has_table('public', 'topic_updates');
+select has_table('public', 'profiles', 'public.profiles should exist');
+select has_table('public', 'communities', 'public.communities should exist');
+select has_table('public', 'memberships', 'public.memberships should exist');
+select has_table('public', 'places', 'public.places should exist');
+select has_table('public', 'topics', 'public.topics should exist');
+select has_table('public', 'topic_options', 'public.topic_options should exist');
+select has_table('public', 'topic_selections', 'public.topic_selections should exist');
+select has_table('public', 'topic_comments', 'public.topic_comments should exist');
+select has_table('public', 'topic_attachments', 'public.topic_attachments should exist');
+select has_table('public', 'topic_updates', 'public.topic_updates should exist');
 
 select has_function('public', 'set_topic_selections', array['uuid', 'uuid[]']);
 select has_function('public', 'get_topic_results', array['uuid']);

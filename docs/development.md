@@ -15,12 +15,21 @@ ein Profil existiert.
 
 - Migrationen liegen in `supabase/migrations`.
 - `supabase/seed.sql` enthält ausschließlich synthetische Pilotdaten.
+- pgTAP wird durch eine Migration im Schema `extensions` aktiviert, damit dieselbe
+  Datenbank-Test-Suite lokal und gegen ein verknüpftes Testprojekt läuft.
+- Das Cloud-Projekt wird ausschließlich per Supabase CLI mit diesen Migrationen
+  aufgebaut; Schemaänderungen im Dashboard sind zu vermeiden.
 - RLS schützt Community-Grenzen und offizielle Profildaten.
 - Individuelle Auswahlen sind nur für den jeweiligen Nutzer lesbar.
 - Öffentliche Ergebnis-RPCs geben ausschließlich Aggregationen zurück.
 - Schreibvorgänge für Auswahl und Kommentare laufen über geprüfte RPCs.
+- Funktionsausführung wird standardmäßig für `public`, `anon` und `authenticated`
+  entzogen und nur pro freigegebener RPC explizit vergeben.
 - Anhänge liegen im privaten Bucket `topic-attachments` und werden per zeitlich
   begrenzter Signed URL ausgeliefert.
+
+Die vollständige einmalige Einrichtung und die Reihenfolge für Link, Migration,
+Seed und Tests stehen in [Supabase Cloud einrichten](supabase-cloud.md).
 
 Optionen einer Abstimmung können nur geändert werden, solange noch keine Auswahl
 existiert. Single Choice wird innerhalb einer Datenbanktransaktion ersetzt;
@@ -42,12 +51,12 @@ die Sandbox eingeschränkt. Diese Wahl verändert das Produktverhalten nicht.
 
 ## Noch erforderliche externe Konfiguration
 
-- Supabase-Projekt anlegen oder lokalen Stack starten
-- Umgebungsvariablen aus `.env.example` setzen
-- OTP-E-Mail-Template auf den sechsstelligen Token konfigurieren
-- gewünschte SMTP-Zustellung für Produktion konfigurieren
-- Migrationen und Seeds anwenden
-- Vercel-Projekt mit denselben öffentlichen Umgebungsvariablen verbinden
+- Supabase-Projekt anlegen, CLI anmelden und Projekt verknüpfen
+- Migrationen und synthetische Pilotdaten per CLI anwenden
+- OTP-E-Mail-Templates auf den sechsstelligen Token konfigurieren
+- Site URL, erlaubte Redirect URLs und produktive SMTP-Zustellung konfigurieren
+- öffentliche Variablen aus `.env.example` lokal und in Vercel setzen
+- RLS-Tests vor dem Pilotbetrieb gegen einen frischen Teststack ausführen
 
 Einladungslinks, Allowlist und automatische Membership-Zuordnung bleiben bewusst
 außerhalb von V0.1.

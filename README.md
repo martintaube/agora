@@ -19,7 +19,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Die von `supabase start` ausgegebenen lokale API-URL und den Anon-Key in
+Die von `supabase start` ausgegebene lokale API-URL und den Publishable Key in
 `.env.local` eintragen. `.env`-Dateien und Schlüssel werden nicht committed.
 
 Die Pilot-Topicseite ist anschließend unter
@@ -45,7 +45,7 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
-npx supabase db lint --local
+npx supabase db lint --local --schema public
 npx supabase test db
 ```
 
@@ -56,3 +56,4 @@ Die beiden letzten Befehle setzen einen laufenden lokalen Supabase-Stack voraus.
 - [Produkt V0.1](docs/product-v0.1.md)
 - [Architektur V0.1](docs/architecture-v0.1.md)
 - [Entwicklung und Betrieb](docs/development.md)
+- [Supabase Cloud einrichten](docs/supabase-cloud.md)

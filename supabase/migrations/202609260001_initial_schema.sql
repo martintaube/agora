@@ -174,34 +174,34 @@ for each row execute function public.touch_updated_at();
 create trigger topic_comments_touch_updated_at before update on public.topic_comments
 for each row execute function public.touch_updated_at();
 
-create or replace function public.is_community_member(p_community_id uuid, p_user_id uuid default auth.uid())
+create or replace function public.is_community_member(p_community_id uuid)
 returns boolean language sql stable security definer set search_path = '' as $$
-  select p_user_id is not null and exists (
+  select auth.uid() is not null and exists (
     select 1 from public.memberships m
-    where m.community_id = p_community_id and m.user_id = p_user_id
+    where m.community_id = p_community_id and m.user_id = auth.uid()
   );
 $$;
 
-create or replace function public.is_community_admin(p_community_id uuid, p_user_id uuid default auth.uid())
+create or replace function public.is_community_admin(p_community_id uuid)
 returns boolean language sql stable security definer set search_path = '' as $$
-  select p_user_id is not null and exists (
+  select auth.uid() is not null and exists (
     select 1 from public.memberships m
     where m.community_id = p_community_id
-      and m.user_id = p_user_id
+      and m.user_id = auth.uid()
       and m.role = 'admin'
       and m.verified_at is not null
   );
 $$;
 
-create or replace function public.can_read_topic(p_topic_id uuid, p_user_id uuid default auth.uid())
+create or replace function public.can_read_topic(p_topic_id uuid)
 returns boolean language sql stable security definer set search_path = '' as $$
   select exists (
     select 1 from public.topics t
     where t.id = p_topic_id
       and (
         (t.publication_status = 'published' and t.visibility = 'public')
-        or (t.publication_status = 'published' and public.is_community_member(t.community_id, p_user_id))
-        or public.is_community_admin(t.community_id, p_user_id)
+        or (t.publication_status = 'published' and public.is_community_member(t.community_id))
+        or public.is_community_admin(t.community_id)
       )
   );
 $$;
@@ -267,7 +267,7 @@ begin
   if not exists (select 1 from public.profiles where id = v_user_id) then raise exception 'Profile required'; end if;
 
   select * into v_topic from public.topics where id = p_topic_id for update;
-  if not found or not public.can_read_topic(p_topic_id, v_user_id) then raise exception 'Topic not available'; end if;
+  if not found or not public.can_read_topic(p_topic_id) then raise exception 'Topic not available'; end if;
   if v_topic.publication_status <> 'published' then raise exception 'Topic is not published'; end if;
   if v_topic.type <> 'information' and v_topic.participation_status <> 'open' then
     raise exception 'Participation is closed';
@@ -301,14 +301,14 @@ returns table (
   option_id uuid,
   option_key text,
   option_label text,
-  position integer,
+  "position" integer,
   selection_count bigint,
   participant_count bigint,
   percentage numeric
 ) language plpgsql stable security definer set search_path = '' as $$
 declare v_mode public.selection_mode;
 begin
-  if not public.can_read_topic(p_topic_id, auth.uid()) then raise exception 'Topic not available'; end if;
+  if not public.can_read_topic(p_topic_id) then raise exception 'Topic not available'; end if;
   select selection_mode into v_mode from public.topics where id = p_topic_id;
   return query
     with totals as (
@@ -338,7 +338,7 @@ returns table (
   edited_at timestamptz, deleted_at timestamptz, created_at timestamptz
 ) language plpgsql stable security definer set search_path = '' as $$
 begin
-  if not public.can_read_topic(p_topic_id, auth.uid()) then raise exception 'Topic not available'; end if;
+  if not public.can_read_topic(p_topic_id) then raise exception 'Topic not available'; end if;
   return query
     select c.id, c.parent_comment_id,
       case when c.deleted_at is null then c.user_id else null end,
@@ -355,7 +355,7 @@ returns uuid language plpgsql security definer set search_path = '' as $$
 declare v_id uuid;
 begin
   if auth.uid() is null then raise exception 'Authentication required'; end if;
-  if not public.can_read_topic(p_topic_id, auth.uid()) then raise exception 'Topic not available'; end if;
+  if not public.can_read_topic(p_topic_id) then raise exception 'Topic not available'; end if;
   if not exists (select 1 from public.profiles where id = auth.uid()) then raise exception 'Profile required'; end if;
   if p_parent_comment_id is not null and not exists (
     select 1 from public.topic_comments where id = p_parent_comment_id and topic_id = p_topic_id
@@ -390,7 +390,7 @@ declare v_community_id uuid;
 begin
   select t.community_id into v_community_id from public.topic_comments c
     join public.topics t on t.id = c.topic_id where c.id = p_comment_id;
-  if not public.is_community_admin(v_community_id, auth.uid()) then raise exception 'Admin access required'; end if;
+  if not public.is_community_admin(v_community_id) then raise exception 'Admin access required'; end if;
   update public.topic_comments set hidden_at = now(), hidden_by = auth.uid() where id = p_comment_id;
 end;
 $$;
@@ -400,7 +400,7 @@ create or replace function public.admin_upsert_membership(
 ) returns uuid language plpgsql security definer set search_path = '' as $$
 declare v_user_id uuid; v_id uuid;
 begin
-  if not public.is_community_admin(p_community_id, auth.uid()) then raise exception 'Admin access required'; end if;
+  if not public.is_community_admin(p_community_id) then raise exception 'Admin access required'; end if;
   select id into v_user_id from public.profiles where username = p_username::extensions.citext;
   if v_user_id is null then raise exception 'Profile not found'; end if;
   if p_role = 'admin' and not p_verified then raise exception 'Admins must be verified'; end if;
@@ -465,22 +465,30 @@ create policy topic_updates_admin_write on public.topic_updates for all to authe
   exists (select 1 from public.topics t where t.id = topic_id and public.is_community_admin(t.community_id))
 ) with check (exists (select 1 from public.topics t where t.id = topic_id and public.is_community_admin(t.community_id)));
 
-revoke all on function public.public_display_name(uuid) from public;
-revoke all on function public.set_topic_selections(uuid, uuid[]) from public;
+alter default privileges in schema public revoke execute on functions from public, anon, authenticated;
+
+revoke all on function public.public_display_name(uuid) from public, anon, authenticated;
+revoke all on function public.is_community_member(uuid) from public, anon, authenticated;
+grant execute on function public.is_community_member(uuid) to anon, authenticated;
+revoke all on function public.is_community_admin(uuid) from public, anon, authenticated;
+grant execute on function public.is_community_admin(uuid) to authenticated;
+revoke all on function public.can_read_topic(uuid) from public, anon, authenticated;
+grant execute on function public.can_read_topic(uuid) to anon, authenticated;
+revoke all on function public.set_topic_selections(uuid, uuid[]) from public, anon, authenticated;
 grant execute on function public.set_topic_selections(uuid, uuid[]) to authenticated;
-revoke all on function public.get_topic_results(uuid) from public;
+revoke all on function public.get_topic_results(uuid) from public, anon, authenticated;
 grant execute on function public.get_topic_results(uuid) to anon, authenticated;
-revoke all on function public.get_topic_comments(uuid) from public;
+revoke all on function public.get_topic_comments(uuid) from public, anon, authenticated;
 grant execute on function public.get_topic_comments(uuid) to anon, authenticated;
-revoke all on function public.create_topic_comment(uuid, text, uuid) from public;
+revoke all on function public.create_topic_comment(uuid, text, uuid) from public, anon, authenticated;
 grant execute on function public.create_topic_comment(uuid, text, uuid) to authenticated;
-revoke all on function public.edit_topic_comment(uuid, text) from public;
+revoke all on function public.edit_topic_comment(uuid, text) from public, anon, authenticated;
 grant execute on function public.edit_topic_comment(uuid, text) to authenticated;
-revoke all on function public.delete_topic_comment(uuid) from public;
+revoke all on function public.delete_topic_comment(uuid) from public, anon, authenticated;
 grant execute on function public.delete_topic_comment(uuid) to authenticated;
-revoke all on function public.hide_topic_comment(uuid) from public;
+revoke all on function public.hide_topic_comment(uuid) from public, anon, authenticated;
 grant execute on function public.hide_topic_comment(uuid) to authenticated;
-revoke all on function public.admin_upsert_membership(uuid, text, public.community_role, boolean) from public;
+revoke all on function public.admin_upsert_membership(uuid, text, public.community_role, boolean) from public, anon, authenticated;
 grant execute on function public.admin_upsert_membership(uuid, text, public.community_role, boolean) to authenticated;
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

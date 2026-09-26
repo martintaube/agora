@@ -1,24 +1,10 @@
--- Synthetic local-development data only. No real personal data is included.
-insert into auth.users (
-  instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
-  raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
-  confirmation_token, email_change, email_change_token_new, recovery_token
-) values (
-  '00000000-0000-0000-0000-000000000000',
-  '10000000-0000-0000-0000-000000000001',
-  'authenticated', 'authenticated', 'demo-admin@example.invalid', '', now(),
-  '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''
-) on conflict (id) do nothing;
-
-insert into auth.identities (
-  id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at
-) values (
-  '11000000-0000-0000-0000-000000000001',
+-- Synthetic development and pilot data only. No real personal data is included.
+insert into auth.users (id, email, raw_user_meta_data)
+values (
   '10000000-0000-0000-0000-000000000001',
   'demo-admin@example.invalid',
-  '{"sub":"10000000-0000-0000-0000-000000000001","email":"demo-admin@example.invalid","email_verified":true}',
-  'email', now(), now(), now()
-) on conflict (provider_id, provider) do nothing;
+  '{}'
+) on conflict (id) do nothing;
 
 insert into public.profiles (id, first_name, last_name, username, display_name)
 values ('10000000-0000-0000-0000-000000000001', 'Demo', 'Admin', 'demo-admin', 'Demo Admin')
