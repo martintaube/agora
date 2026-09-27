@@ -1,5 +1,5 @@
 begin;
-select plan(20);
+select plan(21);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('91000000-0000-0000-0000-000000000001', 'registered@example.invalid', '{}'),
@@ -53,6 +53,11 @@ select results_eq(
   $$select count(*)::bigint from public.topics where id::text like '93000000-%'$$,
   $$values (1::bigint)$$,
   'Guests see only published public topics'
+);
+select results_eq(
+  $$select count(*)::bigint from public.communities where id::text like '92000000-%'$$,
+  $$values (1::bigint)$$,
+  'Guests see the community that owns a published public topic'
 );
 select results_eq(
   $$select count(*)::bigint from public.profiles$$,
