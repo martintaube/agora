@@ -53,7 +53,19 @@ function OptionEditor({ inputClass }: { inputClass: string }) {
   </fieldset>;
 }
 
-export function TopicForm({ communitySlug, communityVisibilityLabel = "Community", topic, places = [] }: { communitySlug: string; communityVisibilityLabel?: string; topic?: Topic; places?: Place[] }) {
+export function TopicForm({
+  communitySlug,
+  communityVisibilityLabel = "Community",
+  communityVisibilityHelpText = "nur für angemeldete Mitglieder dieser Gemeinschaft lesbar.",
+  topic,
+  places = [],
+}: {
+  communitySlug: string;
+  communityVisibilityLabel?: string;
+  communityVisibilityHelpText?: string;
+  topic?: Topic;
+  places?: Place[];
+}) {
   const action = topic?.id ? updateTopic : createTopic;
   const [type, setType] = useState<TopicType>((topic?.type as TopicType | undefined) ?? "opinion");
   const input = "mt-2 min-h-11 w-full border border-[var(--line)] bg-white px-3";
@@ -78,7 +90,7 @@ export function TopicForm({ communitySlug, communityVisibilityLabel = "Community
           <span tabIndex={0} className="group relative inline-flex text-[var(--muted)] outline-none focus:text-[var(--foreground)]" aria-label="Bedeutung der Sichtbarkeit">
             <CircleHelp className="h-4 w-4" aria-hidden="true" />
             <span role="tooltip" className="invisible absolute left-1/2 top-6 z-20 w-72 -translate-x-1/2 border border-[var(--line)] bg-white p-3 text-xs font-normal leading-5 text-[var(--foreground)] shadow-lg group-hover:visible group-focus:visible">
-              <strong>Öffentlich:</strong> ohne Anmeldung lesbar.<br /><strong>{communityVisibilityLabel}:</strong> nur für angemeldete Mitglieder dieser Gemeinschaft lesbar.
+              <strong>Öffentlich:</strong> ohne Anmeldung lesbar.<br /><strong>{communityVisibilityLabel}:</strong> {communityVisibilityHelpText}
             </span>
           </span>
         </div>

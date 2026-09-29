@@ -6,7 +6,7 @@ export async function requireCommunityAdmin(communitySlug: string) {
   const { data: authData } = await supabase.auth.getUser();
   const next = `/c/${communitySlug}/admin`;
   if (!authData.user) redirect(`/auth/sign-in?next=${encodeURIComponent(next)}`);
-  const { data: community } = await supabase.from("communities").select("id,name,slug,member_visibility_label").eq("slug", communitySlug).maybeSingle();
+  const { data: community } = await supabase.from("communities").select("id,name,slug,member_visibility_label,member_visibility_help_text").eq("slug", communitySlug).maybeSingle();
   if (!community) notFound();
   const { data: membership } = await supabase.from("memberships").select("role,verified_at").eq("community_id", community.id).eq("user_id", authData.user.id).maybeSingle();
   if (membership?.role !== "admin" || !membership.verified_at) redirect(`/c/${communitySlug}`);

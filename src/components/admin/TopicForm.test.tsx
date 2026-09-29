@@ -11,13 +11,17 @@ afterEach(cleanup);
 
 describe("TopicForm", () => {
   it("uses the tenant visibility label and explains both scopes", () => {
-    render(<TopicForm communitySlug="ltc" communityVisibilityLabel="Vereinsweit" />);
+    render(<TopicForm
+      communitySlug="ltc"
+      communityVisibilityLabel="Nur für Mitglieder"
+      communityVisibilityHelpText="nur für angemeldete Mitglieder des LTC lesbar."
+    />);
 
-    expect(screen.getByRole("option", { name: "Vereinsweit" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Nur für Mitglieder" })).toBeInTheDocument();
     const help = screen.getByLabelText("Bedeutung der Sichtbarkeit");
     expect(help).toHaveAttribute("tabindex", "0");
     expect(screen.getByRole("tooltip")).toHaveTextContent("Öffentlich: ohne Anmeldung lesbar.");
-    expect(screen.getByRole("tooltip")).toHaveTextContent("Vereinsweit: nur für angemeldete Mitglieder dieser Gemeinschaft lesbar.");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("Nur für Mitglieder: nur für angemeldete Mitglieder des LTC lesbar.");
   });
 
   it("keeps the generated slug read-only while preserving it on edit", () => {
