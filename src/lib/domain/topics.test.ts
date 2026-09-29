@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getImplementationStatusLabel, getTopicStatusLabel } from "./topics";
+import { canPublishTopicResult, getImplementationStatusLabel, getTopicStatusLabel } from "./topics";
 
 describe("getTopicStatusLabel", () => {
   it("uses type-specific result labels", () => {
@@ -22,5 +22,15 @@ describe("getImplementationStatusLabel", () => {
   it("maps optional implementation states", () => {
     expect(getImplementationStatusLabel("in_progress")).toBe("In Umsetzung");
     expect(getImplementationStatusLabel(null)).toBeNull();
+  });
+});
+
+describe("canPublishTopicResult", () => {
+  it("allows results only for closed opinion and vote topics", () => {
+    expect(canPublishTopicResult("opinion", "closed")).toBe(true);
+    expect(canPublishTopicResult("vote", "closed")).toBe(true);
+    expect(canPublishTopicResult("opinion", "open")).toBe(false);
+    expect(canPublishTopicResult("information", null)).toBe(false);
+    expect(canPublishTopicResult("collaboration", "closed")).toBe(false);
   });
 });

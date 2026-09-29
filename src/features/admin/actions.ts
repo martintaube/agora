@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { canPublishTopicResult, type ParticipationStatus, type TopicType } from "@/lib/domain/topics";
 import { requireCommunityAdmin } from "./auth";
 import { optionKey, optionLabels, topicValues } from "./topic-form";
 
@@ -52,8 +53,15 @@ export async function replaceVoteOptions(formData: FormData) {
 export async function publishUpdate(formData: FormData) {
   const communitySlug = String(formData.get("communitySlug"));
   const topicId = String(formData.get("topicId"));
-  const { supabase, user } = await requireCommunityAdmin(communitySlug);
-  const { error } = await supabase.from("topic_updates").insert({ topic_id: topicId, kind: String(formData.get("kind")), title: String(formData.get("title")), body: String(formData.get("body")), created_by: user.id });
+  const kind = String(formData.get("kind"));
+  const { supabase, user, community } = await requireCommunityAdmin(communitySlug);
+  const { data: topic } = await supabase.from("topics").select("type,participation_status").eq("id", topicId).eq("community_id", community.id).maybeSingle();
+  if (!topic) redirect(`/c/${communitySlug}/admin?error=Topic%20nicht%20gefunden`);
+  if (kind !== "result" && kind !== "implementation") redirect(`/c/${communitySlug}/admin/topics/${topicId}?error=Ungültige%20Update-Art`);
+  if (kind === "result" && !canPublishTopicResult(topic.type as TopicType, topic.participation_status as ParticipationStatus)) {
+    redirect(`/c/${communitySlug}/admin/topics/${topicId}?error=Ergebnisse%20können%20nur%20für%20geschlossene%20Meinungsabfragen%20oder%20Abstimmungen%20veröffentlicht%20werden`);
+  }
+  const { error } = await supabase.from("topic_updates").insert({ topic_id: topicId, kind, title: String(formData.get("title")), body: String(formData.get("body")), created_by: user.id });
   if (error) redirect(`/c/${communitySlug}/admin/topics/${topicId}?error=${encodeURIComponent(error.message)}`);
   revalidatePath(`/c/${communitySlug}/admin/topics/${topicId}`);
   redirect(`/c/${communitySlug}/admin/topics/${topicId}?saved=update`);

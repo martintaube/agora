@@ -31,3 +31,7 @@ export function getImplementationStatusLabel(status: ImplementationStatus): stri
     implemented: "Umgesetzt",
   }[status];
 }
+
+export function canPublishTopicResult(type: TopicType, participationStatus: ParticipationStatus): boolean {
+  return (type === "opinion" || type === "vote") && participationStatus === "closed";
+}
