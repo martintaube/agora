@@ -49,6 +49,6 @@ describe("createTopic", () => {
     expect(mocks.optionInsert).toHaveBeenCalledWith(expect.arrayContaining([
       expect.objectContaining({ topic_id: topicId, label: "Gute Idee" }),
     ]));
-    expect(mocks.redirect).toHaveBeenCalledWith(`/c/ltc/admin/topics/${topicId}`);
+    expect(mocks.redirect).toHaveBeenCalledWith("/c/ltc/admin/topics/neues-topic");
   });
 });

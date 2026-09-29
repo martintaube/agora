@@ -14,7 +14,7 @@ export function slugify(value: string) {
   return value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ß/g, "ss").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 100);
 }
 
-export function topicValues(formData: FormData, userId: string, now = new Date()) {
+export function topicValues(formData: FormData, userId: string, now = new Date(), existingSlug?: string) {
   const type = value(formData, "type") as TopicType;
   const publicationStatus = value(formData, "publicationStatus");
   const hasGuidingQuestion = type === "opinion" || type === "vote";
@@ -25,7 +25,7 @@ export function topicValues(formData: FormData, userId: string, now = new Date()
     type,
     visibility: value(formData, "visibility"),
     title: value(formData, "title"),
-    slug: slugify(value(formData, "slug") || value(formData, "title")),
+    slug: existingSlug ?? slugify(value(formData, "title")),
     guiding_question: hasGuidingQuestion ? value(formData, "guidingQuestion") || null : null,
     content: value(formData, "content"),
     task: type === "collaboration" ? value(formData, "task") || null : null,

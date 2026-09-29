@@ -77,6 +77,7 @@ export function TopicForm({
   return <form action={action} className="space-y-6">
     <input type="hidden" name="communitySlug" value={communitySlug} />
     {topic?.id && <input type="hidden" name="topicId" value={topic.id} />}
+    {topic?.slug && <input type="hidden" name="topicSlug" value={topic.slug} />}
 
     <div className="grid gap-5 sm:grid-cols-2">
       <label className="text-sm font-semibold">Topic-Typ
@@ -103,13 +104,6 @@ export function TopicForm({
     <label className="block text-sm font-semibold">Titel
       <input name="title" required maxLength={180} defaultValue={topic?.title ?? ""} className={input} />
     </label>
-    <input type="hidden" name="slug" value={topic?.slug ?? ""} />
-    <div title="In dieser Version wird der Slug automatisch erstellt und kann nicht bearbeitet werden.">
-      <label className="block text-sm font-semibold">Slug
-        <input disabled defaultValue={topic?.slug ?? ""} placeholder="wird aus dem Titel erzeugt" aria-describedby="slug-version-hint" className={`${input} cursor-not-allowed bg-stone-100 text-[var(--muted)]`} />
-      </label>
-      <span id="slug-version-hint" className="sr-only">In dieser Version wird der Slug automatisch erstellt und kann nicht bearbeitet werden.</span>
-    </div>
     {hasGuidingQuestion && <label className="block text-sm font-semibold">Leitfrage
       <input name="guidingQuestion" required defaultValue={topic?.guiding_question ?? ""} className={input} />
     </label>}

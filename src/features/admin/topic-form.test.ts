@@ -56,6 +56,11 @@ describe("topicValues", () => {
       event_ends_at: "2026-10-11T14:00",
     });
   });
+
+  it("creates the slug from the title and preserves an existing slug", () => {
+    expect(topicValues(form("opinion"), "user-1").slug).toBe("test-topic");
+    expect(topicValues(form("opinion"), "user-1", new Date(), "bestehender-slug").slug).toBe("bestehender-slug");
+  });
 });
 
 describe("optionLabels", () => {

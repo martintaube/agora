@@ -97,7 +97,7 @@ Administration:
 
 - `/c/[communitySlug]/admin` - Topic-Übersicht der Community
 - `/c/[communitySlug]/admin/topics/new` - Topic erstellen
-- `/c/[communitySlug]/admin/topics/[topicId]` - Topic, Optionen, Status und Updates
+- `/c/[communitySlug]/admin/topics/[topicSlug]` - Topic, Optionen, Status und Updates
   bearbeiten
 
 Schreiboperationen sollten bevorzugt als Next.js Server Actions umgesetzt werden.
