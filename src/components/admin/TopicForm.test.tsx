@@ -10,6 +10,15 @@ vi.mock("@/features/admin/actions", () => ({
 afterEach(cleanup);
 
 describe("TopicForm", () => {
+  it("keeps the generated slug read-only while preserving it on edit", () => {
+    const { container } = render(<TopicForm communitySlug="ltc" topic={{ id: "topic-1", slug: "bestehender-slug" }} />);
+
+    const slug = screen.getByLabelText("Slug");
+    expect(slug).toBeDisabled();
+    expect(slug.parentElement?.parentElement).toHaveAttribute("title", "In dieser Version wird der Slug automatisch erstellt und kann nicht bearbeitet werden.");
+    expect(container.querySelector('input[type="hidden"][name="slug"]')).toHaveValue("bestehender-slug");
+  });
+
   it("shows only opinion fields and fixed reactions by default", () => {
     render(<TopicForm communitySlug="ltc" />);
 
