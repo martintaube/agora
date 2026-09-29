@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import { CircleHelp, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { createTopic, updateTopic } from "@/features/admin/actions";
@@ -53,7 +53,7 @@ function OptionEditor({ inputClass }: { inputClass: string }) {
   </fieldset>;
 }
 
-export function TopicForm({ communitySlug, topic, places = [] }: { communitySlug: string; topic?: Topic; places?: Place[] }) {
+export function TopicForm({ communitySlug, communityVisibilityLabel = "Community", topic, places = [] }: { communitySlug: string; communityVisibilityLabel?: string; topic?: Topic; places?: Place[] }) {
   const action = topic?.id ? updateTopic : createTopic;
   const [type, setType] = useState<TopicType>((topic?.type as TopicType | undefined) ?? "opinion");
   const input = "mt-2 min-h-11 w-full border border-[var(--line)] bg-white px-3";
@@ -72,11 +72,20 @@ export function TopicForm({ communitySlug, topic, places = [] }: { communitySlug
           {topicTypes.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
         </select>
       </label>
-      <label className="text-sm font-semibold">Sichtbarkeit
-        <select name="visibility" defaultValue={topic?.visibility ?? "public"} className={input}>
-          <option value="public">Öffentlich</option><option value="community">Community</option>
+      <div>
+        <div className="flex items-center gap-1.5 text-sm font-semibold">
+          <label htmlFor="topic-visibility">Sichtbarkeit</label>
+          <span tabIndex={0} className="group relative inline-flex text-[var(--muted)] outline-none focus:text-[var(--foreground)]" aria-label="Bedeutung der Sichtbarkeit">
+            <CircleHelp className="h-4 w-4" aria-hidden="true" />
+            <span role="tooltip" className="invisible absolute left-1/2 top-6 z-20 w-72 -translate-x-1/2 border border-[var(--line)] bg-white p-3 text-xs font-normal leading-5 text-[var(--foreground)] shadow-lg group-hover:visible group-focus:visible">
+              <strong>Öffentlich:</strong> ohne Anmeldung lesbar.<br /><strong>{communityVisibilityLabel}:</strong> nur für angemeldete Mitglieder dieser Gemeinschaft lesbar.
+            </span>
+          </span>
+        </div>
+        <select id="topic-visibility" name="visibility" defaultValue={topic?.visibility ?? "public"} className={input}>
+          <option value="public">Öffentlich</option><option value="community">{communityVisibilityLabel}</option>
         </select>
-      </label>
+      </div>
     </div>
 
     <label className="block text-sm font-semibold">Titel

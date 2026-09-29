@@ -1,5 +1,5 @@
 begin;
-select plan(19);
+select plan(20);
 
 select has_table('public', 'profiles', 'public.profiles should exist');
 select has_table('public', 'communities', 'public.communities should exist');
@@ -11,6 +11,7 @@ select has_table('public', 'topic_selections', 'public.topic_selections should e
 select has_table('public', 'topic_comments', 'public.topic_comments should exist');
 select has_table('public', 'topic_attachments', 'public.topic_attachments should exist');
 select has_table('public', 'topic_updates', 'public.topic_updates should exist');
+select has_column('public', 'communities', 'member_visibility_label', 'communities should have a tenant-specific visibility label');
 
 select has_function('public', 'set_topic_selections', array['uuid', 'uuid[]']);
 select has_function('public', 'get_topic_results', array['uuid']);

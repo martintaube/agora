@@ -10,9 +10,9 @@ insert into public.profiles (id, first_name, last_name, username, display_name)
 values ('10000000-0000-0000-0000-000000000001', 'Demo', 'Admin', 'demo-admin', 'Demo Admin')
 on conflict (id) do nothing;
 
-insert into public.communities (id, name, slug)
-values ('20000000-0000-0000-0000-000000000001', 'Lichtenberger TC', 'ltc')
-on conflict (id) do nothing;
+insert into public.communities (id, name, slug, member_visibility_label)
+values ('20000000-0000-0000-0000-000000000001', 'Lichtenberger TC', 'ltc', 'Vereinsweit')
+on conflict (id) do update set member_visibility_label = excluded.member_visibility_label;
 
 insert into public.memberships (community_id, user_id, role, verified_at, verified_by)
 values (

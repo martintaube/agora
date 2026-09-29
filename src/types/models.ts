@@ -49,6 +49,7 @@ export type TopicPageData = {
   community_id: string;
   communityName: string;
   communitySlug: string;
+  communityVisibilityLabel: string;
   placeName: string | null;
   type: TopicType;
   visibility: TopicVisibility;

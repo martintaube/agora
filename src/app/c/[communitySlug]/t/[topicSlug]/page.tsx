@@ -57,7 +57,7 @@ export default async function TopicPage({ params, searchParams }: Props) {
               <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-[var(--muted)]">
                 {topic.placeName && <span className="flex items-center gap-2"><MapPin className="h-4 w-4" />{topic.placeName}</span>}
                 {period && <span className="flex items-center gap-2"><CalendarDays className="h-4 w-4" />{period}</span>}
-                <span className="flex items-center gap-2"><Users className="h-4 w-4" />{topic.visibility === "public" ? "Öffentlich" : "Community"}</span>
+                <span className="flex items-center gap-2"><Users className="h-4 w-4" />{topic.visibility === "public" ? "Öffentlich" : topic.communityVisibilityLabel}</span>
               </div>
             </div>
             {primaryImage?.signedUrl && <div role="img" aria-label={primaryImage.file_name} className="min-h-56 bg-cover bg-center" style={{ backgroundImage: `url(${primaryImage.signedUrl})` }} />}

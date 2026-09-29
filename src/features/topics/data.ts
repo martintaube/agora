@@ -2,12 +2,12 @@ import { createClient } from "@/lib/supabase/server";
 import type { TopicAttachment, TopicComment, TopicOption, TopicPageData, TopicResult, TopicUpdate } from "@/types/models";
 import { getDemoTopic } from "./demo";
 
-type TopicRow = Omit<TopicPageData, "communityName" | "communitySlug" | "placeName" | "options" | "results" | "comments" | "attachments" | "updates" | "selectedOptionIds" | "currentUserId">;
+type TopicRow = Omit<TopicPageData, "communityName" | "communitySlug" | "communityVisibilityLabel" | "placeName" | "options" | "results" | "comments" | "attachments" | "updates" | "selectedOptionIds" | "currentUserId">;
 
 export async function getTopicPageData(communitySlug: string, topicSlug: string): Promise<TopicPageData | null> {
   if (process.env.AGORA_DEMO_MODE === "true") return getDemoTopic(communitySlug, topicSlug);
   const supabase = await createClient();
-  const { data: community } = await supabase.from("communities").select("id,name,slug").eq("slug", communitySlug).maybeSingle();
+  const { data: community } = await supabase.from("communities").select("id,name,slug,member_visibility_label").eq("slug", communitySlug).maybeSingle();
   if (!community) return null;
 
   const { data: topic } = await supabase
@@ -40,6 +40,7 @@ export async function getTopicPageData(communitySlug: string, topicSlug: string)
     ...(topic as TopicRow),
     communityName: community.name,
     communitySlug: community.slug,
+    communityVisibilityLabel: community.member_visibility_label,
     placeName: placeResponse.data?.name ?? null,
     options: (optionsResponse.data ?? []) as TopicOption[],
     results: (resultsResponse.data ?? []) as TopicResult[],

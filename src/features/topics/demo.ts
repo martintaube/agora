@@ -12,6 +12,7 @@ export function getDemoTopic(communitySlug: string, topicSlug: string): TopicPag
     community_id: "20000000-0000-0000-0000-000000000001",
     communityName: "Lichtenberger TC",
     communitySlug,
+    communityVisibilityLabel: "Vereinsweit",
     placeName: "Vereinsanlage · zwischen Platz 2 und 3",
     type: "opinion",
     visibility: "public",

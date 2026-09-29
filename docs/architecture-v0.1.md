@@ -178,8 +178,14 @@ diesen berechneten Namen, niemals automatisch den vollständigen offiziellen Nam
 id uuid primary key
 name text not null
 slug text not null unique
+member_visibility_label text not null default 'Community'
 created_at timestamptz not null default now()
 ```
+
+`member_visibility_label` ist die mandantenspezifische UI-Bezeichnung für
+`visibility = 'community'`, zum Beispiel `Vereinsweit`, `Nachbarschaft` oder
+`Genossenschaft`. Der stabile interne Enum-Wert und die RLS-Regeln bleiben davon
+unberührt.
 
 ### `memberships`
 
