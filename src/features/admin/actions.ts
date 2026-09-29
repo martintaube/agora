@@ -13,15 +13,16 @@ export async function createTopic(formData: FormData) {
   const values = topicValues(formData, user.id);
   const labels = optionLabels(values.type, String(formData.get("options") ?? ""));
   if (values.type === "vote" && labels.length < 2) redirect(`/c/${communitySlug}/admin/topics/new?error=Eine%20Abstimmung%20benötigt%20mindestens%20zwei%20Optionen`);
-  const { data: topic, error } = await supabase.from("topics").insert({ ...values, community_id: community.id }).select("id").single();
-  if (error || !topic) redirect(`/c/${communitySlug}/admin/topics/new?error=${encodeURIComponent(error?.message ?? "Topic konnte nicht erstellt werden")}`);
-  const options = labels.map((label, position) => ({ topic_id: topic.id, key: optionKey(values.type, position), label, position }));
+  const topicId = crypto.randomUUID();
+  const { error } = await supabase.from("topics").insert({ id: topicId, ...values, community_id: community.id });
+  if (error) redirect(`/c/${communitySlug}/admin/topics/new?error=${encodeURIComponent(error.message)}`);
+  const options = labels.map((label, position) => ({ topic_id: topicId, key: optionKey(values.type, position), label, position }));
   const { error: optionsError } = await supabase.from("topic_options").insert(options);
   if (optionsError) {
-    await supabase.from("topics").delete().eq("id", topic.id);
+    await supabase.from("topics").delete().eq("id", topicId);
     redirect(`/c/${communitySlug}/admin/topics/new?error=${encodeURIComponent(optionsError.message)}`);
   }
-  redirect(`/c/${communitySlug}/admin/topics/${topic.id}`);
+  redirect(`/c/${communitySlug}/admin/topics/${topicId}`);
 }
 
 export async function updateTopic(formData: FormData) {
