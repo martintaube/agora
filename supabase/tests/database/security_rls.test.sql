@@ -1,5 +1,5 @@
 begin;
-select plan(21);
+select plan(25);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('91000000-0000-0000-0000-000000000001', 'registered@example.invalid', '{}'),
@@ -18,7 +18,7 @@ insert into public.communities (id, name, slug) values
   ('92000000-0000-0000-0000-000000000002', 'Test Community B', 'test-b');
 
 insert into public.memberships (community_id, user_id, role, verified_at, verified_by) values
-  ('92000000-0000-0000-0000-000000000001', '91000000-0000-0000-0000-000000000002', 'member', null, null),
+  ('92000000-0000-0000-0000-000000000001', '91000000-0000-0000-0000-000000000002', 'member', now(), '91000000-0000-0000-0000-000000000003'),
   ('92000000-0000-0000-0000-000000000001', '91000000-0000-0000-0000-000000000003', 'admin', now(), '91000000-0000-0000-0000-000000000003'),
   ('92000000-0000-0000-0000-000000000002', '91000000-0000-0000-0000-000000000004', 'admin', now(), '91000000-0000-0000-0000-000000000004');
 
@@ -133,10 +133,24 @@ select throws_ok(
   '42501', null,
   'Community members cannot upload topic attachments'
 );
+select throws_ok(
+  $$insert into public.topics (community_id, type, visibility, title, slug, content, selection_mode, publication_status, participation_status, created_by) values ('92000000-0000-0000-0000-000000000001', 'opinion', 'community', 'Member insert', 'member-insert', 'Denied', 'single', 'draft', 'open', auth.uid())$$,
+  '42501', null,
+  'Regular members cannot create topics'
+);
 reset role;
 
 set local role authenticated;
 set local request.jwt.claim.sub = '91000000-0000-0000-0000-000000000003';
+select lives_ok(
+  $$insert into public.topics (community_id, type, visibility, title, slug, content, selection_mode, publication_status, participation_status, created_by) values ('92000000-0000-0000-0000-000000000001', 'opinion', 'community', 'Admin A insert', 'admin-a-insert', 'Allowed', 'single', 'draft', 'open', auth.uid())$$,
+  'Verified admins can create topics in their own community'
+);
+select throws_ok(
+  $$insert into public.topics (community_id, type, visibility, title, slug, content, selection_mode, publication_status, participation_status, created_by) values ('92000000-0000-0000-0000-000000000001', 'opinion', 'community', 'Wrong author', 'wrong-author', 'Denied', 'single', 'draft', 'open', '91000000-0000-0000-0000-000000000004')$$,
+  '42501', null,
+  'Admins cannot create topics attributed to another user'
+);
 select results_eq(
   $$update public.topics set title = 'Updated by A' where id = '93000000-0000-0000-0000-000000000002' returning id$$,
   $$values ('93000000-0000-0000-0000-000000000002'::uuid)$$,
@@ -162,8 +176,17 @@ select throws_ok(
 );
 select results_eq(
   $$select count(*)::bigint from public.topics where publication_status = 'draft'$$,
-  $$values (1::bigint)$$,
+  $$values (2::bigint)$$,
   'Admins can read drafts in their own community'
+);
+reset role;
+
+set local role authenticated;
+set local request.jwt.claim.sub = '91000000-0000-0000-0000-000000000004';
+select throws_ok(
+  $$insert into public.topics (community_id, type, visibility, title, slug, content, selection_mode, publication_status, participation_status, created_by) values ('92000000-0000-0000-0000-000000000001', 'opinion', 'community', 'Admin B cross insert', 'admin-b-cross-insert', 'Denied', 'single', 'draft', 'open', auth.uid())$$,
+  '42501', null,
+  'Admins cannot create topics in another community'
 );
 reset role;
 

@@ -3,59 +3,18 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireCommunityAdmin } from "./auth";
+import { optionKey, optionLabels, topicValues } from "./topic-form";
 
 const allowedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
-
-function slugify(value: string) {
-  return value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ß/g, "ss").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 100);
-}
-
-function topicValues(formData: FormData, userId: string) {
-  const type = String(formData.get("type"));
-  const publicationStatus = String(formData.get("publicationStatus"));
-  return {
-    type,
-    visibility: String(formData.get("visibility")),
-    title: String(formData.get("title") ?? "").trim(),
-    slug: slugify(String(formData.get("slug") || formData.get("title") || "")),
-    guiding_question: String(formData.get("guidingQuestion") ?? "").trim() || null,
-    content: String(formData.get("content") ?? "").trim(),
-    task: String(formData.get("task") ?? "").trim() || null,
-    place_id: String(formData.get("placeId") ?? "") || null,
-    selection_mode: type === "information" ? "multiple" : type === "vote" ? String(formData.get("selectionMode")) : "single",
-    publication_status: publicationStatus,
-    participation_status: type === "information" ? null : String(formData.get("participationStatus") || "open"),
-    participation_ends_at: String(formData.get("participationEndsAt") ?? "") || null,
-    event_starts_at: String(formData.get("eventStartsAt") ?? "") || null,
-    implementation_status: String(formData.get("implementationStatus") ?? "") || null,
-    published_at: publicationStatus === "published" ? new Date().toISOString() : null,
-    created_by: userId,
-  };
-}
-
-function optionLabels(type: string, value: string) {
-  if (type === "information") return ["Gelesen", "Danke", "Interessiert mich"];
-  if (type === "opinion") return ["Gute Idee", "Unentschieden", "Sehe ich kritisch"];
-  if (type === "collaboration") return ["Ich bin dabei", "Vielleicht"];
-  return value.split("\n").map((line) => line.trim()).filter(Boolean);
-}
-
-function optionKey(type: string, position: number) {
-  const keys: Record<string, string[]> = {
-    information: ["read", "thanks", "interested"],
-    opinion: ["positive", "neutral", "critical"],
-    collaboration: ["joining", "maybe"],
-  };
-  return type === "vote" ? `option-${position + 1}` : keys[type]?.[position];
-}
 
 export async function createTopic(formData: FormData) {
   const communitySlug = String(formData.get("communitySlug"));
   const { supabase, user, community } = await requireCommunityAdmin(communitySlug);
   const values = topicValues(formData, user.id);
+  const labels = optionLabels(values.type, String(formData.get("options") ?? ""));
+  if (values.type === "vote" && labels.length < 2) redirect(`/c/${communitySlug}/admin/topics/new?error=Eine%20Abstimmung%20benötigt%20mindestens%20zwei%20Optionen`);
   const { data: topic, error } = await supabase.from("topics").insert({ ...values, community_id: community.id }).select("id").single();
   if (error || !topic) redirect(`/c/${communitySlug}/admin/topics/new?error=${encodeURIComponent(error?.message ?? "Topic konnte nicht erstellt werden")}`);
-  const labels = optionLabels(values.type, String(formData.get("options") ?? ""));
   const options = labels.map((label, position) => ({ topic_id: topic.id, key: optionKey(values.type, position), label, position }));
   const { error: optionsError } = await supabase.from("topic_options").insert(options);
   if (optionsError) {
