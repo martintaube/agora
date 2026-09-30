@@ -131,7 +131,8 @@ Schließen nachvollziehbar.
 
 Eine Abstimmung besteht aus Titel, Leitfrage, Inhalt beziehungsweise Kontext,
 optional Bild oder Anhang und frei definierbaren Antwortoptionen. Der Administrator
-legt beim Erstellen fest, ob die Abstimmung eine Einfach- oder Mehrfachauswahl ist.
+legt zwei bis sieben Antwortoptionen an und beim Erstellen fest, ob die Abstimmung
+eine Einfach- oder Mehrfachauswahl ist.
 
 Nutzer können ihre Auswahl während der offenen Beteiligungsphase ändern oder
 entfernen. Die aktuellen Ergebnisse werden live angezeigt und bleiben nach dem

@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TopicForm } from "./TopicForm";
 
@@ -20,8 +20,8 @@ describe("TopicForm", () => {
     expect(screen.getByRole("option", { name: "Nur für Mitglieder" })).toBeInTheDocument();
     const help = screen.getByLabelText("Bedeutung der Sichtbarkeit");
     expect(help).toHaveAttribute("tabindex", "0");
-    expect(screen.getByRole("tooltip")).toHaveTextContent("Öffentlich: ohne Anmeldung lesbar.");
-    expect(screen.getByRole("tooltip")).toHaveTextContent("Nur für Mitglieder: nur für angemeldete Mitglieder des LTC lesbar.");
+    expect(within(help).getByRole("tooltip")).toHaveTextContent("Öffentlich: ohne Anmeldung lesbar.");
+    expect(within(help).getByRole("tooltip")).toHaveTextContent("Nur für Mitglieder: nur für angemeldete Mitglieder des LTC lesbar.");
   });
 
   it("keeps the topic slug internal while preserving it on edit", () => {
@@ -34,6 +34,10 @@ describe("TopicForm", () => {
   it("shows only opinion fields and fixed reactions by default", () => {
     render(<TopicForm communitySlug="ltc" />);
 
+    expect(screen.getByLabelText("Bedeutung von Titel")).toBeInTheDocument();
+    expect(screen.getByLabelText("Bedeutung von Leitfrage")).toBeInTheDocument();
+    expect(screen.getByText(/Die Überschrift des Topics/)).toBeInTheDocument();
+    expect(screen.getByText(/Die konkrete Frage, auf die sich die Reaktion bezieht/)).toBeInTheDocument();
     expect(screen.getByLabelText("Leitfrage")).toBeVisible();
     expect(screen.queryByLabelText("Auswahlmodus")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Konkrete Aufgabe")).not.toBeInTheDocument();
@@ -52,6 +56,18 @@ describe("TopicForm", () => {
     expect(screen.getByLabelText("Antwortoption 2")).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Option hinzufügen" }));
     expect(screen.getByLabelText("Antwortoption 3")).toBeVisible();
+  });
+
+  it("limits votes to seven answer options", () => {
+    render(<TopicForm communitySlug="ltc" />);
+    fireEvent.change(screen.getByLabelText("Topic-Typ"), { target: { value: "vote" } });
+
+    const addButton = screen.getByRole("button", { name: "Option hinzufügen" });
+    for (let index = 0; index < 5; index += 1) fireEvent.click(addButton);
+
+    expect(screen.getByLabelText("Antwortoption 7")).toBeVisible();
+    expect(addButton).toBeDisabled();
+    expect(screen.queryByLabelText("Antwortoption 8")).not.toBeInTheDocument();
   });
 
   it("shows only the collaboration task, event period and fixed reactions", () => {

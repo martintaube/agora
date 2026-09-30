@@ -51,4 +51,22 @@ describe("createTopic", () => {
     ]));
     expect(mocks.redirect).toHaveBeenCalledWith("/c/ltc/admin/topics/neues-topic");
   });
+
+  it("rejects votes with more than seven options", async () => {
+    const formData = new FormData();
+    Object.entries({
+      communitySlug: "ltc",
+      type: "vote",
+      visibility: "community",
+      title: "Zu viele Optionen",
+      content: "Kontext",
+      guidingQuestion: "Welche Option?",
+      publicationStatus: "draft",
+      participationStatus: "open",
+      options: Array.from({ length: 8 }, (_, index) => `Option ${index + 1}`).join("\n"),
+    }).forEach(([key, value]) => formData.set(key, value));
+
+    await expect(createTopic(formData)).rejects.toThrow("höchstens%20sieben%20Optionen");
+    expect(mocks.topicInsert).not.toHaveBeenCalled();
+  });
 });

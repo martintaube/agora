@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { canPublishTopicResult, type ParticipationStatus, type TopicType } from "@/lib/domain/topics";
 import { requireCommunityAdmin } from "./auth";
-import { optionKey, optionLabels, topicValues } from "./topic-form";
+import { MAX_VOTE_OPTIONS, optionKey, optionLabels, topicValues } from "./topic-form";
 
 const allowedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
 
@@ -14,6 +14,7 @@ export async function createTopic(formData: FormData) {
   const values = topicValues(formData, user.id);
   const labels = optionLabels(values.type, String(formData.get("options") ?? ""));
   if (values.type === "vote" && labels.length < 2) redirect(`/c/${communitySlug}/admin/topics/new?error=Eine%20Abstimmung%20benötigt%20mindestens%20zwei%20Optionen`);
+  if (values.type === "vote" && labels.length > MAX_VOTE_OPTIONS) redirect(`/c/${communitySlug}/admin/topics/new?error=Eine%20Abstimmung%20darf%20höchstens%20sieben%20Optionen%20haben`);
   const topicId = crypto.randomUUID();
   const { error } = await supabase.from("topics").insert({ id: topicId, ...values, community_id: community.id });
   if (error) redirect(`/c/${communitySlug}/admin/topics/new?error=${encodeURIComponent(error.message)}`);
@@ -45,6 +46,7 @@ export async function replaceVoteOptions(formData: FormData) {
   const topicId = String(formData.get("topicId"));
   const topicSlug = String(formData.get("topicSlug"));
   const labels = String(formData.get("options") ?? "").split("\n").map((line) => line.trim()).filter(Boolean);
+  if (labels.length > MAX_VOTE_OPTIONS) redirect(`/c/${communitySlug}/admin/topics/${topicSlug}?error=Eine%20Abstimmung%20darf%20höchstens%20sieben%20Optionen%20haben`);
   const { supabase } = await requireCommunityAdmin(communitySlug);
   const { error } = await supabase.rpc("admin_replace_vote_options", { p_topic_id: topicId, p_labels: labels });
   if (error) redirect(`/c/${communitySlug}/admin/topics/${topicSlug}?error=${encodeURIComponent(error.message)}`);

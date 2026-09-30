@@ -287,9 +287,10 @@ unique (topic_id, position)
 Beispiele für `key`: `read`, `thanks`, `interested`, `positive`, `neutral`,
 `critical`, `joining`, `maybe`. Bei Abstimmungen wird ein stabiler generierter Key
 verwendet; der sichtbare Text liegt in `label`. Vordefinierte Optionen werden beim
-Erstellen eines Topics serverseitig angelegt. Optionen sollen nach der ersten
-Teilnahme nicht gelöscht oder semantisch verändert werden, damit Ergebnisse
-nachvollziehbar bleiben.
+Erstellen eines Topics serverseitig angelegt. Abstimmungen haben zwei bis sieben
+Antwortoptionen; die Obergrenze wird im Formular und serverseitig durchgesetzt.
+Optionen sollen nach der ersten Teilnahme nicht gelöscht oder semantisch verändert
+werden, damit Ergebnisse nachvollziehbar bleiben.
 
 ### `topic_selections`
 

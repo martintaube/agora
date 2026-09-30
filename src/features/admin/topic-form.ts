@@ -1,5 +1,7 @@
 import type { TopicType } from "@/lib/domain/topics";
 
+export const MAX_VOTE_OPTIONS = 7;
+
 export const fixedTopicOptions: Partial<Record<TopicType, string[]>> = {
   information: ["Gelesen", "Danke", "Interessiert mich"],
   opinion: ["Gute Idee", "Unentschieden", "Sehe ich kritisch"],

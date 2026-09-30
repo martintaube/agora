@@ -4,7 +4,7 @@ import { CircleHelp, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { createTopic, updateTopic } from "@/features/admin/actions";
-import { fixedTopicOptions } from "@/features/admin/topic-form";
+import { fixedTopicOptions, MAX_VOTE_OPTIONS } from "@/features/admin/topic-form";
 import type { TopicType } from "@/lib/domain/topics";
 
 type Topic = Record<string, string | null> & { id?: string };
@@ -16,6 +16,18 @@ const topicTypes: Array<{ value: TopicType; label: string }> = [
   { value: "vote", label: "Abstimmung" },
   { value: "collaboration", label: "Mitarbeit gesucht" },
 ];
+
+function HelpLabel({ htmlFor, label, children }: { htmlFor: string; label: string; children: React.ReactNode }) {
+  return <div className="flex items-center gap-1.5 text-sm font-semibold">
+    <label htmlFor={htmlFor}>{label}</label>
+    <span tabIndex={0} className="group relative inline-flex text-[var(--muted)] outline-none focus:text-[var(--foreground)]" aria-label={`Bedeutung von ${label}`}>
+      <CircleHelp className="h-4 w-4" aria-hidden="true" />
+      <span role="tooltip" className="invisible absolute left-1/2 top-6 z-20 w-72 -translate-x-1/2 border border-[var(--line)] bg-white p-3 text-xs font-normal leading-5 text-[var(--foreground)] shadow-lg group-hover:visible group-focus:visible">
+        {children}
+      </span>
+    </span>
+  </div>;
+}
 
 function OptionEditor({ inputClass }: { inputClass: string }) {
   const [options, setOptions] = useState(["", ""]);
@@ -47,9 +59,10 @@ function OptionEditor({ inputClass }: { inputClass: string }) {
         <Trash2 className="h-4 w-4" aria-hidden="true" />
       </button>
     </div>)}
-    <Button type="button" variant="secondary" onClick={() => setOptions((current) => [...current, ""])}>
+    <Button type="button" variant="secondary" disabled={options.length >= MAX_VOTE_OPTIONS} onClick={() => setOptions((current) => [...current, ""])}>
       <Plus className="mr-2 inline h-4 w-4" aria-hidden="true" />Option hinzufügen
     </Button>
+    <p className="text-xs text-[var(--muted)]">Maximal {MAX_VOTE_OPTIONS} Antwortoptionen.</p>
   </fieldset>;
 }
 
@@ -101,12 +114,20 @@ export function TopicForm({
       </div>
     </div>
 
-    <label className="block text-sm font-semibold">Titel
-      <input name="title" required maxLength={180} defaultValue={topic?.title ?? ""} className={input} />
-    </label>
-    {hasGuidingQuestion && <label className="block text-sm font-semibold">Leitfrage
-      <input name="guidingQuestion" required defaultValue={topic?.guiding_question ?? ""} className={input} />
-    </label>}
+    <div>
+      <HelpLabel htmlFor="topic-title" label="Titel">
+        Die Überschrift des Topics, also das, was in Listen, auf QR-Seiten und in der Community-Übersicht steht.
+        <span className="mt-2 block"><strong>Beispiel:</strong> Neue Sitzbank zwischen Platz 2 und 3</span>
+      </HelpLabel>
+      <input id="topic-title" name="title" required maxLength={180} defaultValue={topic?.title ?? ""} className={input} />
+    </div>
+    {hasGuidingQuestion && <div>
+      <HelpLabel htmlFor="topic-guiding-question" label="Leitfrage">
+        Die konkrete Frage, auf die sich die Reaktion bezieht.
+        <span className="mt-2 block"><strong>Beispiel:</strong> Wie sinnvoll findet ihr eine zusätzliche Sitzmöglichkeit an dieser Stelle?</span>
+      </HelpLabel>
+      <input id="topic-guiding-question" name="guidingQuestion" required defaultValue={topic?.guiding_question ?? ""} className={input} />
+    </div>}
     <label className="block text-sm font-semibold">Inhalt/Kontext
       <textarea name="content" required rows={8} defaultValue={topic?.content ?? ""} className={`${input} py-3`} />
     </label>
