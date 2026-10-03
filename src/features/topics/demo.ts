@@ -36,6 +36,7 @@ export function getDemoTopic(communitySlug: string, topicSlug: string): TopicPag
       { ...options[1], selection_count: 5, participant_count: 27, percentage: 18.5 },
       { ...options[2], selection_count: 4, participant_count: 27, percentage: 14.8 },
     ],
+    collaborationParticipants: [],
     comments: [
       { id: "c1", parent_comment_id: null, author_id: "u1", author_name: "Nora K.", body: "Eine Bank wäre an der Stelle sehr hilfreich, besonders bei Jugendspielen.", edited_at: null, deleted_at: null, created_at: "2026-09-24T14:30:00Z" },
       { id: "c2", parent_comment_id: "c1", author_id: "u2", author_name: "Jan S.", body: "Vielleicht gleich mit einem kleinen Sonnenschutz planen?", edited_at: "2026-09-25T09:10:00Z", deleted_at: null, created_at: "2026-09-25T08:55:00Z" },

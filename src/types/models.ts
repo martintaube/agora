@@ -16,6 +16,13 @@ export type TopicResult = TopicOption & {
   percentage: number;
 };
 
+export type CollaborationParticipant = {
+  option_id: string;
+  option_key: string;
+  option_label: string;
+  participant_name: string;
+};
+
 export type TopicComment = {
   id: string;
   parent_comment_id: string | null;
@@ -69,6 +76,7 @@ export type TopicPageData = {
   implementation_status: ImplementationStatus;
   options: TopicOption[];
   results: TopicResult[];
+  collaborationParticipants: CollaborationParticipant[];
   comments: TopicComment[];
   attachments: TopicAttachment[];
   updates: TopicUpdate[];

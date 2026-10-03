@@ -39,7 +39,7 @@ describe("topicValues", () => {
       task: null,
       selection_mode: "single",
       participation_status: "closed",
-      participation_ends_at: "2026-10-10T12:00",
+      participation_ends_at: "2026-10-10T10:00:00.000Z",
       event_starts_at: null,
       event_ends_at: null,
     });
@@ -52,8 +52,8 @@ describe("topicValues", () => {
       task: "Alte Aufgabe",
       selection_mode: "single",
       participation_ends_at: null,
-      event_starts_at: "2026-10-11T12:00",
-      event_ends_at: "2026-10-11T14:00",
+      event_starts_at: "2026-10-11T10:00:00.000Z",
+      event_ends_at: "2026-10-11T12:00:00.000Z",
     });
   });
 

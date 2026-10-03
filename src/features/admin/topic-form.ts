@@ -1,4 +1,5 @@
 import type { TopicType } from "@/lib/domain/topics";
+import { communityDateTimeToIso } from "@/lib/time-zone";
 
 export const MAX_VOTE_OPTIONS = 7;
 
@@ -35,9 +36,9 @@ export function topicValues(formData: FormData, userId: string, now = new Date()
     selection_mode: type === "information" ? "multiple" : type === "vote" && value(formData, "selectionMode") === "multiple" ? "multiple" : "single",
     publication_status: publicationStatus,
     participation_status: type === "information" ? null : value(formData, "participationStatus") || "open",
-    participation_ends_at: hasParticipationEnd ? value(formData, "participationEndsAt") || null : null,
-    event_starts_at: hasEventPeriod ? value(formData, "eventStartsAt") || null : null,
-    event_ends_at: hasEventPeriod ? value(formData, "eventEndsAt") || null : null,
+    participation_ends_at: hasParticipationEnd ? communityDateTimeToIso(value(formData, "participationEndsAt")) : null,
+    event_starts_at: hasEventPeriod ? communityDateTimeToIso(value(formData, "eventStartsAt")) : null,
+    event_ends_at: hasEventPeriod ? communityDateTimeToIso(value(formData, "eventEndsAt")) : null,
     implementation_status: value(formData, "implementationStatus") || null,
     published_at: publicationStatus === "published" ? now.toISOString() : null,
     created_by: userId,

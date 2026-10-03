@@ -44,6 +44,9 @@ describe("TopicForm", () => {
     expect(screen.getByText("Gute Idee")).toBeVisible();
     expect(screen.getByText("Unentschieden")).toBeVisible();
     expect(screen.getByText("Sehe ich kritisch")).toBeVisible();
+    expect(within(screen.getByLabelText("Bedeutung von Beteiligung")).getByRole("tooltip")).toHaveTextContent("sperrt neue Reaktionen sofort");
+    expect(within(screen.getByLabelText("Bedeutung von Beteiligung endet")).getByRole("tooltip")).toHaveTextContent("Europe/Berlin (MEZ/MESZ)");
+    expect(screen.getByRole("option", { name: "Geschlossen (sofort)" })).toBeInTheDocument();
   });
 
   it("shows the option editor and selection mode for votes", () => {
@@ -77,6 +80,12 @@ describe("TopicForm", () => {
     expect(screen.getByLabelText("Konkrete Aufgabe")).toBeVisible();
     expect(screen.getByLabelText("Termin beginnt")).toBeVisible();
     expect(screen.getByLabelText("Termin endet")).toBeVisible();
+    expect(within(screen.getByLabelText("Bedeutung von Termin beginnt")).getByRole("tooltip")).toHaveTextContent("Europe/Berlin (MEZ/MESZ)");
+    expect(screen.getByRole("option", { name: /^Geschlossen$/ })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Geschlossen (sofort)" })).not.toBeInTheDocument();
+    expect(within(screen.getByLabelText("Bedeutung von Beteiligung")).getByRole("tooltip")).toHaveTextContent("Suche nach Helfenden");
+    expect(within(screen.getByLabelText("Bedeutung von Beteiligung")).getByRole("tooltip")).toHaveTextContent("Weitere Zusagen");
+    expect(within(screen.getByLabelText("Bedeutung von Beteiligung")).getByRole("tooltip")).not.toHaveTextContent("Reaktionen");
     expect(screen.queryByLabelText("Leitfrage")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Auswahlmodus")).not.toBeInTheDocument();
     expect(screen.getByText("Ich bin dabei")).toBeVisible();

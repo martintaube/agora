@@ -1,8 +1,30 @@
 import { createClient } from "@/lib/supabase/server";
-import type { TopicAttachment, TopicComment, TopicOption, TopicPageData, TopicResult, TopicUpdate } from "@/types/models";
+import type { CollaborationParticipant, TopicAttachment, TopicComment, TopicOption, TopicPageData, TopicResult, TopicUpdate } from "@/types/models";
 import { getDemoTopic } from "./demo";
 
-type TopicRow = Omit<TopicPageData, "communityName" | "communitySlug" | "communityVisibilityLabel" | "placeName" | "options" | "results" | "comments" | "attachments" | "updates" | "selectedOptionIds" | "currentUserId">;
+type TopicRow = Omit<TopicPageData, "communityName" | "communitySlug" | "communityVisibilityLabel" | "placeName" | "options" | "results" | "collaborationParticipants" | "comments" | "attachments" | "updates" | "selectedOptionIds" | "currentUserId">;
+
+type TopicResultRow = {
+  option_id: string;
+  option_key: string;
+  option_label: string;
+  position: number;
+  selection_count: number;
+  participant_count: number;
+  percentage: number | string;
+};
+
+export function mapTopicResults(rows: TopicResultRow[]): TopicResult[] {
+  return rows.map((row) => ({
+    id: row.option_id,
+    key: row.option_key,
+    label: row.option_label,
+    position: row.position,
+    selection_count: Number(row.selection_count),
+    participant_count: Number(row.participant_count),
+    percentage: Number(row.percentage),
+  }));
+}
 
 export async function getTopicPageData(communitySlug: string, topicSlug: string): Promise<TopicPageData | null> {
   if (process.env.AGORA_DEMO_MODE === "true") return getDemoTopic(communitySlug, topicSlug);
@@ -20,10 +42,13 @@ export async function getTopicPageData(communitySlug: string, topicSlug: string)
 
   const { data: authData } = await supabase.auth.getUser();
   const userId = authData.user?.id ?? null;
-  const [placeResponse, optionsResponse, resultsResponse, commentsResponse, attachmentsResponse, updatesResponse, selectionsResponse] = await Promise.all([
+  const [placeResponse, optionsResponse, resultsResponse, participantsResponse, commentsResponse, attachmentsResponse, updatesResponse, selectionsResponse] = await Promise.all([
     topic.place_id ? supabase.from("places").select("name").eq("id", topic.place_id).maybeSingle() : Promise.resolve({ data: null }),
     supabase.from("topic_options").select("id,key,label,position").eq("topic_id", topic.id).order("position"),
     supabase.rpc("get_topic_results", { p_topic_id: topic.id }),
+    userId && topic.type === "collaboration"
+      ? supabase.rpc("get_collaboration_participants", { p_topic_id: topic.id })
+      : Promise.resolve({ data: [] }),
     supabase.rpc("get_topic_comments", { p_topic_id: topic.id }),
     supabase.from("topic_attachments").select("id,storage_path,file_name,mime_type,is_primary_image").eq("topic_id", topic.id),
     supabase.from("topic_updates").select("id,kind,title,body,published_at").eq("topic_id", topic.id).order("published_at", { ascending: false }),
@@ -43,7 +68,8 @@ export async function getTopicPageData(communitySlug: string, topicSlug: string)
     communityVisibilityLabel: community.member_visibility_label,
     placeName: placeResponse.data?.name ?? null,
     options: (optionsResponse.data ?? []) as TopicOption[],
-    results: (resultsResponse.data ?? []) as TopicResult[],
+    results: mapTopicResults((resultsResponse.data ?? []) as TopicResultRow[]),
+    collaborationParticipants: (participantsResponse.data ?? []) as CollaborationParticipant[],
     comments: (commentsResponse.data ?? []) as TopicComment[],
     attachments,
     updates: (updatesResponse.data ?? []) as TopicUpdate[],

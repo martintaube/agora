@@ -6,7 +6,7 @@ import { CommentThread } from "@/components/topic/CommentThread";
 import { ParticipationPanel } from "@/components/topic/ParticipationPanel";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { getTopicPageData } from "@/features/topics/data";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatDateTimeLong, formatParticipationRemaining, isParticipationEnded } from "@/lib/format";
 import { getImplementationStatusLabel, getTopicStatusLabel, type TopicType } from "@/lib/domain/topics";
 
 const typeLabels: Record<TopicType, string> = {
@@ -27,17 +27,22 @@ export default async function TopicPage({ params, searchParams }: Props) {
   const topic = await getTopicPageData(communitySlug, topicSlug);
   if (!topic) notFound();
 
+  const participationEnded = isParticipationEnded(topic.participation_ends_at);
   const status = getTopicStatusLabel({
     type: topic.type,
     publicationStatus: topic.publication_status,
-    participationStatus: topic.participation_status,
+    participationStatus: participationEnded ? "closed" : topic.participation_status,
     resultPublishedAt: topic.result_published_at,
   });
   const implementation = getImplementationStatusLabel(topic.implementation_status);
   const resumedSelections = Array.isArray(query.select) ? query.select : query.select ? [query.select] : [];
   const next = `/c/${communitySlug}/t/${topicSlug}`;
   const primaryImage = topic.attachments.find((item) => item.is_primary_image && item.mime_type.startsWith("image/"));
-  const period = topic.participation_ends_at ? `bis ${formatDate(topic.participation_ends_at)}` : null;
+  const remaining = formatParticipationRemaining(topic.participation_ends_at);
+  const manuallyClosed = topic.type !== "information" && topic.participation_status === "closed" && !participationEnded;
+  const period = topic.participation_ends_at
+    ? `${participationEnded ? "Beteiligung beendet am" : manuallyClosed ? "Ursprüngliche Frist:" : "Beteiligung endet am"} ${formatDateTimeLong(topic.participation_ends_at)}${!participationEnded && !manuallyClosed && remaining ? ` (${remaining})` : ""}`
+    : null;
 
   return (
     <>
@@ -69,7 +74,16 @@ export default async function TopicPage({ params, searchParams }: Props) {
           {query.error && <p role="alert" className="mt-6 border border-red-200 bg-red-50 p-3 text-sm text-red-900">{query.error}</p>}
           <section className="py-8">
             <div className="whitespace-pre-wrap text-base leading-7">{topic.content}</div>
-            {topic.task && <div className="mt-6 border-l-4 border-[var(--accent)] bg-amber-50 p-4"><strong>Konkrete Aufgabe</strong><p className="mt-1">{topic.task}</p></div>}
+            {topic.task && <div className="mt-6 border-l-4 border-[var(--accent)] bg-amber-50 p-4"><strong>Konkrete Aufgabe</strong><p className="mt-1 whitespace-pre-wrap">{topic.task}</p></div>}
+            {(topic.event_starts_at || topic.event_ends_at) && (
+              <div className="mt-6 border-l-4 border-[var(--brand)] bg-emerald-50 p-4">
+                <div className="flex items-center gap-2 font-bold"><CalendarDays className="h-4 w-4" aria-hidden="true" />Termin</div>
+                <dl className="mt-2 grid gap-1 text-sm sm:grid-cols-[max-content_1fr] sm:gap-x-4">
+                  {topic.event_starts_at && <><dt className="font-semibold">Beginn</dt><dd>{formatDateTimeLong(topic.event_starts_at)}</dd></>}
+                  {topic.event_ends_at && <><dt className="font-semibold">Ende</dt><dd>{formatDateTimeLong(topic.event_ends_at)}</dd></>}
+                </dl>
+              </div>
+            )}
             {topic.attachments.filter((item) => item.id !== primaryImage?.id).length > 0 && (
               <div className="mt-6 flex flex-wrap gap-2">
                 {topic.attachments.filter((item) => item.id !== primaryImage?.id).map((attachment) => (

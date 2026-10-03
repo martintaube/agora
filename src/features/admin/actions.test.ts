@@ -49,7 +49,7 @@ describe("createTopic", () => {
     expect(mocks.optionInsert).toHaveBeenCalledWith(expect.arrayContaining([
       expect.objectContaining({ topic_id: topicId, label: "Gute Idee" }),
     ]));
-    expect(mocks.redirect).toHaveBeenCalledWith("/c/ltc/admin/topics/neues-topic");
+    expect(mocks.redirect).toHaveBeenCalledWith("/c/ltc/admin/topics/neues-topic?created=1");
   });
 
   it("rejects votes with more than seven options", async () => {
@@ -68,5 +68,29 @@ describe("createTopic", () => {
 
     await expect(createTopic(formData)).rejects.toThrow("höchstens%20sieben%20Optionen");
     expect(mocks.topicInsert).not.toHaveBeenCalled();
+  });
+
+  it("uses the same post-create confirmation route for a vote", async () => {
+    const formData = new FormData();
+    Object.entries({
+      communitySlug: "ltc",
+      type: "vote",
+      visibility: "community",
+      title: "Neue Abstimmung",
+      content: "Kontext",
+      guidingQuestion: "Welche Option?",
+      publicationStatus: "draft",
+      participationStatus: "open",
+      selectionMode: "single",
+      options: "Option A\nOption B",
+    }).forEach(([key, value]) => formData.set(key, value));
+
+    await expect(createTopic(formData)).rejects.toThrow("redirect:/c/ltc/admin/topics/neue-abstimmung?created=1");
+
+    expect(mocks.optionInsert).toHaveBeenCalledWith([
+      expect.objectContaining({ label: "Option A", position: 0 }),
+      expect.objectContaining({ label: "Option B", position: 1 }),
+    ]);
+    expect(mocks.redirect).toHaveBeenCalledWith("/c/ltc/admin/topics/neue-abstimmung?created=1");
   });
 });

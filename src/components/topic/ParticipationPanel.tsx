@@ -2,19 +2,56 @@ import { Check, MessageSquareText } from "lucide-react";
 import { saveSelection } from "@/features/participation/actions";
 import type { TopicPageData } from "@/types/models";
 import { Button } from "@/components/ui/Button";
+import { formatDateTimeLong, formatParticipationRemaining, isParticipationEnded } from "@/lib/format";
 
 export function ParticipationPanel({ topic, resumedSelections = [] }: { topic: TopicPageData; resumedSelections?: string[] }) {
   const selected = new Set(resumedSelections.length ? resumedSelections : topic.selectedOptionIds);
-  const canParticipate = topic.type === "information" || topic.participation_status === "open";
+  const participationEnded = isParticipationEnded(topic.participation_ends_at);
+  const manuallyClosed = topic.type !== "information" && topic.participation_status === "closed" && !participationEnded;
+  const canParticipate = (topic.type === "information" || topic.participation_status === "open") && !participationEnded;
   const showResults = topic.type === "opinion" || topic.type === "vote";
   const next = `/c/${topic.communitySlug}/t/${topic.slug}`;
+  const remaining = formatParticipationRemaining(topic.participation_ends_at);
+  const isCollaboration = topic.type === "collaboration";
+  const participantGroups = isCollaboration
+    ? topic.options.map((option) => ({
+        option,
+        names: topic.collaborationParticipants
+          .filter((participant) => participant.option_id === option.id)
+          .map((participant) => participant.participant_name),
+      })).filter((group) => group.names.length > 0)
+    : [];
 
   return (
     <section className="border-y border-[var(--line)] py-8" id="beteiligung">
       <div className="mb-5 flex items-center gap-3">
         <Check className="h-5 w-5 text-[var(--brand)]" aria-hidden="true" />
-        <h2 className="text-xl font-bold">Beteiligung</h2>
+        <h2 className="text-xl font-bold">{isCollaboration ? "Mithilfe" : "Beteiligung"}</h2>
       </div>
+      {participationEnded && topic.participation_ends_at && (
+        <div role="status" className="mb-5 border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+          <strong>Beteiligung beendet</strong>
+          <p className="mt-1">Der Beteiligungszeitraum endete am {formatDateTimeLong(topic.participation_ends_at)}.</p>
+        </div>
+      )}
+      {manuallyClosed && (
+        <div role="status" className="mb-5 border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+          <strong>{isCollaboration ? "Suche nach Helfenden geschlossen" : "Beteiligung geschlossen"}</strong>
+          <p className="mt-1">
+            {isCollaboration
+              ? "Für diese Aufgabe werden aktuell keine weiteren Helfenden gesucht."
+              : topic.participation_ends_at
+                ? "Die Beteiligung wurde manuell vor Ablauf der angegebenen Frist geschlossen."
+                : "Die Beteiligung wurde manuell geschlossen."}
+          </p>
+        </div>
+      )}
+      {!participationEnded && !manuallyClosed && remaining && topic.participation_ends_at && (
+        <div className="mb-5 border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950">
+          <strong>{remaining}</strong>
+          <p className="mt-1">Beteiligung möglich bis {formatDateTimeLong(topic.participation_ends_at)}.</p>
+        </div>
+      )}
       {canParticipate ? (
         <form action={saveSelection} className="space-y-4">
           <input type="hidden" name="topicId" value={topic.id} />
@@ -34,13 +71,22 @@ export function ParticipationPanel({ topic, resumedSelections = [] }: { topic: T
               </label>
             ))}
           </fieldset>
+          {isCollaboration && (
+            <p className="text-sm text-[var(--muted)]">
+              Mit deiner Auswahl wird dein Anzeigename für bestätigte Mitglieder des {topic.communityName} sichtbar.
+            </p>
+          )}
           <div className="flex items-center gap-3">
             <Button type="submit">Auswahl speichern</Button>
             {!topic.currentUserId && <span className="text-sm text-[var(--muted)]">Anmeldung erst beim Speichern</span>}
           </div>
         </form>
       ) : (
-        <p className="text-[var(--muted)]">Die Beteiligung ist geschlossen. Die Ergebnisse bleiben sichtbar.</p>
+        <p className="text-[var(--muted)]">
+          {isCollaboration
+            ? "Weitere Zusagen sind nicht möglich. Die bisherigen Rückmeldungen bleiben sichtbar."
+            : "Es sind keine weiteren Reaktionen möglich. Die Ergebnisse bleiben sichtbar."}
+        </p>
       )}
 
       {showResults && topic.results.length > 0 && (
@@ -69,6 +115,25 @@ export function ParticipationPanel({ topic, resumedSelections = [] }: { topic: T
         <div className="mt-6 flex flex-wrap gap-2" aria-label="Reaktionen">
           {topic.results.map((result) => <span key={result.id} className="border border-[var(--line)] bg-white px-3 py-2 text-sm"><strong>{result.selection_count}</strong> {result.label}</span>)}
         </div>
+      )}
+      {participantGroups.length > 0 && (
+        <section className="mt-8 border-t border-[var(--line)] pt-6" aria-label="Helfende">
+          <h3 className="font-bold">Wer hilft mit?</h3>
+          <p className="mt-1 text-sm text-[var(--muted)]">Sichtbar für bestätigte Mitglieder des {topic.communityName}.</p>
+          <div className="mt-4 space-y-5">
+            {participantGroups.map(({ option, names }) => (
+              <div key={option.id}>
+                <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+                  <h4 className="font-semibold">{option.label}</h4>
+                  <span className="text-[var(--muted)]">{names.length}</span>
+                </div>
+                <ul className="flex flex-wrap gap-2">
+                  {names.map((name, index) => <li key={`${option.id}-${index}`} className="border border-[var(--line)] bg-white px-3 py-2 text-sm">{name}</li>)}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
       <a href="#kommentare" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[var(--brand-strong)]"><MessageSquareText className="h-4 w-4" />Zur Diskussion</a>
     </section>

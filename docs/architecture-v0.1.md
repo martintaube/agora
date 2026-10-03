@@ -71,12 +71,14 @@ Zentrale Objekte:
 ### Topic administrieren
 
 1. Ein bestätigter Community-Admin öffnet den geschützten Adminbereich.
-2. Er erstellt das Topic, Optionen, Anhänge und Beteiligungsregeln als Entwurf.
-3. Er veröffentlicht das Topic und erzeugt beziehungsweise kopiert die kanonische
+2. Er erstellt das Topic und die Beteiligungsregeln als Entwurf.
+3. Eine Bestätigungsansicht zeigt sofort Uploads, öffentlichen Link und QR-Code.
+   Der QR-Code kann als PNG kopiert oder heruntergeladen werden.
+4. Er ergänzt Anhänge, veröffentlicht das Topic und verwendet die kanonische
    QR-URL.
-4. Er schließt die Beteiligung, veröffentlicht ein Ergebnis und kann einen
+5. Er schließt die Beteiligung, veröffentlicht ein Ergebnis und kann einen
    Umsetzungsstatus sowie weitere Updates pflegen.
-5. Er kann problematische Kommentare ausblenden.
+6. Er kann problematische Kommentare ausblenden.
 
 ## Routes
 
@@ -323,6 +325,14 @@ Choice ist der Nenner die Zahl unterschiedlicher teilnehmender Nutzer; dadurch d
 die Summe der Optionsprozente über 100 Prozent liegen. Multiple Choice hat in V0.1
 keine Auswahlobergrenze und kein Feld `max_selections`.
 
+Eine zweite, eng begrenzte `security definer`-RPC gibt Namen ausschließlich für
+veröffentlichte Topics vom Typ `collaboration` zurück. Sie verlangt eine bestätigte
+Membership in derselben Community und liefert nur den kontrollierten Anzeigenamen
+sowie die zugehörige Reaktionsoption. Sie gibt weder E-Mail-Adressen noch
+Profilfelder oder User-IDs aus. Gäste, Nichtmitglieder und unbestätigte Memberships
+erhalten keinen Zugriff. Meinungs- und Abstimmungsselektionen bleiben ausschließlich
+aggregiert.
+
 ### `topic_comments`
 
 ```text
@@ -465,6 +475,9 @@ Zusätzliche Regeln:
   Öffentliche Abfragen verwenden eine eingeschränkte View/RPC für Anzeigenamen.
 - Ergebnisaggregation darf keine Rückschlüsse über öffentlich abrufbare
   Einzelstimmen ermöglichen.
+- Namen zu Mitarbeit-Reaktionen werden nur über eine typgebundene RPC und nur an
+  bestätigte Mitglieder derselben Community ausgegeben. Der Aktionsbereich weist
+  vor dem Speichern auf diese Sichtbarkeit hin.
 
 ## Authentifizierungsstrategie
 

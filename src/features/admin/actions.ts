@@ -24,7 +24,7 @@ export async function createTopic(formData: FormData) {
     await supabase.from("topics").delete().eq("id", topicId);
     redirect(`/c/${communitySlug}/admin/topics/new?error=${encodeURIComponent(optionsError.message)}`);
   }
-  redirect(`/c/${communitySlug}/admin/topics/${values.slug}`);
+  redirect(`/c/${communitySlug}/admin/topics/${values.slug}?created=1`);
 }
 
 export async function updateTopic(formData: FormData) {

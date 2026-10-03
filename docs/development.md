@@ -49,6 +49,25 @@ Der Produktionsbuild verwendet `next build --webpack`. Turbopack benötigt in de
 aktuellen lokalen Umgebung beim CSS-Build einen internen Port und ist dort durch
 die Sandbox eingeschränkt. Diese Wahl verändert das Produktverhalten nicht.
 
+## Lokale Entwicklung
+
+`npm run dev` stellt dieselben Next.js-Routes wie Production bereit. Ist Port
+3000 bereits belegt, wird ein freier Port explizit gewählt, zum Beispiel:
+
+```bash
+npm run dev -- --hostname 127.0.0.1 --port 3001
+```
+
+Die Werte in `.env.local` zeigen derzeit auf das Supabase-Cloud-Projekt. Dadurch
+sind dieselben Communities und Topics verfügbar, lokale Schreibaktionen verändern
+aber auch Cloud-Daten. Auth-Cookies gelten pro Origin: Eine Anmeldung auf der
+Vercel-Domain meldet nicht automatisch auf `localhost` an. Für lokale Admin-Routes
+ist daher eine separate lokale Anmeldung erforderlich.
+
+Während einer Arbeitsphase werden Änderungen lokal entwickelt und geprüft.
+Production-Deployments werden gebündelt und nur auf ausdrücklichen Wunsch oder an
+einem vereinbarten Zwischenstand ausgeführt.
+
 ## Noch erforderliche externe Konfiguration
 
 - Supabase-Projekt anlegen, CLI anmelden und Projekt verknüpfen

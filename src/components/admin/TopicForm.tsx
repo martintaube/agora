@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { createTopic, updateTopic } from "@/features/admin/actions";
 import { fixedTopicOptions, MAX_VOTE_OPTIONS } from "@/features/admin/topic-form";
 import type { TopicType } from "@/lib/domain/topics";
+import { COMMUNITY_TIME_ZONE_LABEL, formatCommunityDateTimeInput } from "@/lib/time-zone";
 
 type Topic = Record<string, string | null> & { id?: string };
 type Place = { id: string; name: string };
@@ -81,6 +82,7 @@ export function TopicForm({
 }) {
   const action = topic?.id ? updateTopic : createTopic;
   const [type, setType] = useState<TopicType>((topic?.type as TopicType | undefined) ?? "opinion");
+  const [participationStatus, setParticipationStatus] = useState<"open" | "closed">((topic?.participation_status as "open" | "closed" | null | undefined) ?? "open");
   const input = "mt-2 min-h-11 w-full border border-[var(--line)] bg-white px-3";
   const fixedOptions = fixedTopicOptions[type];
   const hasGuidingQuestion = type === "opinion" || type === "vote";
@@ -160,11 +162,16 @@ export function TopicForm({
           <option value="draft">Entwurf</option><option value="published">Veröffentlicht</option><option value="archived">Archiviert</option>
         </select>
       </label>
-      {type !== "information" && <label className="text-sm font-semibold">Beteiligung
-        <select name="participationStatus" defaultValue={topic?.participation_status ?? "open"} className={input}>
-          <option value="open">Offen</option><option value="closed">Geschlossen</option>
+      {type !== "information" && <div>
+        <HelpLabel htmlFor="participation-status" label="Beteiligung">
+          {type === "collaboration"
+            ? "„Geschlossen“ beendet die Suche nach Helfenden. Weitere Zusagen sind dann nicht mehr möglich."
+            : "„Geschlossen“ sperrt neue Reaktionen sofort, auch wenn die Frist erst später endet."}
+        </HelpLabel>
+        <select id="participation-status" name="participationStatus" value={participationStatus} onChange={(event) => setParticipationStatus(event.target.value as "open" | "closed")} className={input}>
+          <option value="open">Offen</option><option value="closed">{type === "collaboration" ? "Geschlossen" : "Geschlossen (sofort)"}</option>
         </select>
-      </label>}
+      </div>}
       <label className="text-sm font-semibold">Umsetzung
         <select name="implementationStatus" defaultValue={topic?.implementation_status ?? ""} className={input}>
           <option value="">Kein Status</option><option value="planned">Geplant</option><option value="in_progress">In Umsetzung</option><option value="implemented">Umgesetzt</option>
@@ -172,16 +179,25 @@ export function TopicForm({
       </label>
     </div>
 
-    {hasParticipationEnd && <label className="block text-sm font-semibold">Beteiligung endet
-      <input type="datetime-local" name="participationEndsAt" defaultValue={topic?.participation_ends_at?.slice(0, 16) ?? ""} className={input} />
-    </label>}
+    {hasParticipationEnd && <div>
+      <HelpLabel htmlFor="participation-ends-at" label="Beteiligung endet">
+        Die Uhrzeit wird in der Zeitzone {COMMUNITY_TIME_ZONE_LABEL} eingegeben.
+      </HelpLabel>
+      <input id="participation-ends-at" type="datetime-local" name="participationEndsAt" defaultValue={formatCommunityDateTimeInput(topic?.participation_ends_at ?? null)} className={input} />
+    </div>}
     {hasEventPeriod && <div className="grid gap-5 sm:grid-cols-2">
-      <label className="text-sm font-semibold">Termin beginnt
-        <input type="datetime-local" name="eventStartsAt" defaultValue={topic?.event_starts_at?.slice(0, 16) ?? ""} className={input} />
-      </label>
-      <label className="text-sm font-semibold">Termin endet
-        <input type="datetime-local" name="eventEndsAt" defaultValue={topic?.event_ends_at?.slice(0, 16) ?? ""} className={input} />
-      </label>
+      <div>
+        <HelpLabel htmlFor="event-starts-at" label="Termin beginnt">
+          Die Uhrzeit wird in der Zeitzone {COMMUNITY_TIME_ZONE_LABEL} eingegeben.
+        </HelpLabel>
+        <input id="event-starts-at" type="datetime-local" name="eventStartsAt" defaultValue={formatCommunityDateTimeInput(topic?.event_starts_at ?? null)} className={input} />
+      </div>
+      <div>
+        <HelpLabel htmlFor="event-ends-at" label="Termin endet">
+          Die Uhrzeit wird in der Zeitzone {COMMUNITY_TIME_ZONE_LABEL} eingegeben.
+        </HelpLabel>
+        <input id="event-ends-at" type="datetime-local" name="eventEndsAt" defaultValue={formatCommunityDateTimeInput(topic?.event_ends_at ?? null)} className={input} />
+      </div>
     </div>}
 
     <Button type="submit">{topic?.id ? "Änderungen speichern" : "Topic erstellen"}</Button>

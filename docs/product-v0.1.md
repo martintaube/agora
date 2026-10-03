@@ -148,6 +148,13 @@ entfernen:
 - `Ich bin dabei`
 - `Vielleicht`
 
+Vor dem Speichern wird darauf hingewiesen, dass der Anzeigename bei diesem
+Topic-Typ für bestätigte Mitglieder derselben Community sichtbar ist. Bestätigte
+Mitglieder sehen die Anzeigenamen gruppiert nach `Ich bin dabei` und `Vielleicht`.
+Gäste, registrierte Nichtmitglieder und unbestätigte Memberships sehen weiterhin
+nur aggregierte Anzahlen. Bei `Meinung gefragt` und `Abstimmung` werden niemals
+individuelle Auswahlen angezeigt.
+
 V0.1 enthält ausdrücklich keine Einsatzplanung, Stundenverwaltung oder
 Schichtplanung.
 
@@ -197,6 +204,12 @@ Geplant -> In Umsetzung -> Umgesetzt
 
 Der Umsetzungsstatus ersetzt den Hauptstatus nicht. So kann eine geschlossene und
 entschiedene Abstimmung beispielsweise zusätzlich `In Umsetzung` sein.
+
+Eine konfigurierte Endzeit schließt neue Reaktionen automatisch. Zusätzlich kann
+ein Administrator die Beteiligung manuell sofort schließen, etwa bei einem
+vorzeitigen Abbruch oder bei Topics ohne Frist. Die manuelle Schließung hat Vorrang
+vor einer noch laufenden Frist und wird in der Nutzeransicht ausdrücklich als
+vorzeitige Schließung erklärt.
 
 ## Ergebnisse und Updates
 

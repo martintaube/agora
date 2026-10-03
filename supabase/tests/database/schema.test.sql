@@ -1,5 +1,5 @@
 begin;
-select plan(21);
+select plan(22);
 
 select has_table('public', 'profiles', 'public.profiles should exist');
 select has_table('public', 'communities', 'public.communities should exist');
@@ -17,6 +17,7 @@ select has_column('public', 'communities', 'member_visibility_help_text', 'commu
 select has_function('public', 'set_topic_selections', array['uuid', 'uuid[]']);
 select has_function('public', 'get_topic_results', array['uuid']);
 select has_function('public', 'get_topic_comments', array['uuid']);
+select has_function('public', 'get_collaboration_participants', array['uuid']);
 select has_function('public', 'create_topic_comment', array['uuid', 'text', 'uuid']);
 select has_function('public', 'delete_topic_comment', array['uuid']);
 select has_function('public', 'admin_upsert_membership', array['uuid', 'text', 'community_role', 'boolean']);
